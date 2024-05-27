@@ -105,14 +105,15 @@ void setup(void) {
  * we start by painting it black.  no reason other than symbolic.
  * we also point out that the fillscreen `function` within TFT_eSPI
  * is used here as it is speed optimized.  `fillScreen` is one of only
- * three functions within the library that we will invoke with the intent
- * of exacting change upon the canvas.  the second will be `drawPixel` which will
- * be the basis of our work. the third will be the `fillEllipse` function 
- * which we will use to effectively paint a large point on the canvas for 
- * illustrative purposes.  creating anything more substantial 
- * than points will require us to graduate to the first level of magic, thus 
- * `fillScreen` and `fillEllipse` are forbidden rituals, invoked by the initiate
- * temporarily until rights to these methods can be secured.
+ * four functions within the library that we will invoke with the intent
+ * of exacting change upon the canvas.  the second will be `drawPixel` which,  
+ * along with the third function `pushSprite` will form the basis of our work.
+ * the fourth will be the `fillEllipse` function which we will use to 
+ * paint a large point on the canvas for strictly illustrative purposes.  
+ * creating anything more substantial than points will require us to graduate 
+ * to the first level of magic, thus `fillScreen` and `fillEllipse` are 
+ * forbidden rituals, invoked by the initiate temporarily until rights to these
+ * methods can be secured.
  */
 
 
@@ -138,7 +139,7 @@ void setup(void) {
                                 
 void loop() {
                                      //
-  tiles = random(1,33);             // now we permit chance to dicate the number of tiles
+  tiles = random(8,33);             // now we permit chance to dicate the number of tiles
   tileSize = tft.width()/tiles;    // and by that token, their size
                                   //
 
@@ -155,13 +156,13 @@ void loop() {
   }  
 
 
-                                                       //
-  for (int x = 0; x < tiles; x++){                    // again, you ask?  not so fast.  we just filled the canvas
-    for (int y = 0; y < tiles; y++){                 // randomly and pixel-wise... now it is tile-wise and `tiles` is random
-      int nx = map(x,0,tiles,0,16);                 // so we normalize the value of `x` and `y` to remain in a range of 
-      int ny = map(y,0,tiles,0,16);                // zero through 15 inclusive.                
-      int c = mercury[ 16 * nx + ny ];            // we are referencing the sprite. this might need explanation
-                                                 // 
+                                                        //
+  for (int x = 0; x < tiles; x++){                     // again, you ask?  not so fast.  we just filled the canvas
+    for (int y = 0; y < tiles; y++){                  // randomly and pixel-wise... now it is tile-wise and `tiles` is random
+      int nx = map(x,0,tiles,0,16);                  // so we normalize the value of `x` and `y` to remain in a range of 
+      int ny = map(y,0,tiles,0,16);                 // zero through 15 inclusive.                
+      int c = map(mercury[ 16 * nx + ny ],0,1,1,0);// we are referencing the sprite. this might need explanation
+                                                  // 
 /*  what is `c`? well, to understand that, we must understand what was just done
  *   
  *  for starters, `c` is a variable of type `int`.  its value was set based upon   
@@ -172,15 +173,20 @@ void loop() {
  *  sprite has a 16x16 resolution, depending upon the tile count, we are either
  *  sub-sampling, critically-sampling, or super-sampling the bitmap within `mercury`
  */
-                                                                                        //
-      buffer0.fillEllipse(x*tileSize,y*tileSize,tileSize*c,tileSize*c,TFT_BLACK);      // here we draw a black ellipse
-                                                                                      // in the buffer over the pixels that
-                                                                                     // were previously painted random colors,
-                                                                                    // but in cases where the sprite was `zero`
-                                                                                   // then `c` will be zero, and thus the radius
-                                                                                  // of our ellipse will be zero, thus not drawn...
-    }                                                                            //
-  }                                                                             //
-  buffer0.pushSprite(0,0);                                                     // and finally, we push the buffer to the canvas
-}                                                                             // and we finish defining the loop
-                                                                             //
+                                                                                                            //
+      buffer0.fillEllipse(x*tileSize+(tileSize/2),y*tileSize+(tileSize/2),tileSize*c,tileSize*c,TFT_BLACK);// here we draw
+                                                                                                          // a black ellipse
+                                                                                                         // in the buffer, 
+                                                                                                        // over pixels 
+                                                                                                       // previously painted 
+                                                                                                      // random colors.
+                                                                                    // in cases where the screen position corresponds
+                                                                                   // to a value of one within the sprite, 
+                                                                                  // then `c` will be zero due to the inverse mapping
+                                                                                 // and thus the radius of our ellipse will be zero, 
+                                                                                // thus not drawn, permitting the sprite to remain,
+    }                                                                          // its form approximated by a multitude of colored pixes
+  }                                                                           // surrounded by a sea of black.
+  buffer0.pushSprite(0,0);                                                   // we push the buffer to the canvas to see our work
+}                                                                           // and we finish defining the loop
+                                                                           //
