@@ -33,8 +33,8 @@ TFT_eSprite buffer0 = TFT_eSprite(&tft);  // create a buffer
  *  in one operation than it does to paint one point at a time.
  *  
  *  the region of memory that serves as a scratch space of sorts 
- *  is the buffer that we are defining here and that we just named
- *  `buffer0`.  
+ *  is the buffer that we are defining here and we just named
+ *  it `buffer0`.  
  */
 
 
@@ -119,7 +119,7 @@ void setup(void) {
 
                                                //
   buffer0.createSprite(128,128);              //  we previously named this buffer, now we give it breadth and length
-  buffer0.setSwapBytes(true);                //  set the buffer's byte order to match the display
+  buffer0.setSwapBytes(true);                //  and we set the buffer's byte order to match that of the display
                                             //
 
                                                 //
@@ -133,20 +133,30 @@ void setup(void) {
     }
   }                                //
   buffer0.pushSprite(0,0);        // and once we are finished, we push the buffer to the canvas          
-}                                // and we are done
-                                //
+}                                // and we are done... a random landscape with half of the pixels
+                                // black and the other half a randomly chosen color
+                               //
 
                                 
 void loop() {
+                                        //
+  tiles += random(0,3) - 1;            // now we permit chance to nudge the tile size slightly
+  if (tiles < 8){                     // and perform corrections to keep the tile count
+    tiles++;                         // within an aesthetically pleasing range
+  } else {                          //
+    if (tiles > 32) {              //
+      tiles--;                    //
+    }                            //                     
+  }                             //
+
+                                       // 
+  tileSize = tft.width()/tiles;       // and since the tile count may have changed, we update their size
                                      //
-  tiles = random(8,33);             // now we permit chance to dicate the number of tiles
-  tileSize = tft.width()/tiles;    // and by that token, their size
-                                  //
 
                                                //
   for (int x = 0; x < 128; x++){              // if this looks familiar, then you are paying attention
     for (int y = 0; y < 128; y++){           //
-      penColor = random(65536);             // this time, however, we are picking a different color each time
+      penColor = rand() % 65536 + 1;        // this time, however, we are picking a different color each time
       if (penColor < 32768) {              // but if the color is represented by a number in the lower half of the range
         buffer0.drawPixel(x,y,TFT_BLACK); // we paint it black instead
       } else {                           //
@@ -190,3 +200,4 @@ void loop() {
   buffer0.pushSprite(0,0);                                                   // we push the buffer to the canvas to see our work
 }                                                                           // and we finish defining the loop
                                                                            //
+                                                                           
