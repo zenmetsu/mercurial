@@ -33,75 +33,154 @@ TFT_eSprite buffer0 = TFT_eSprite(&tft);  // create a buffer
  *  in one operation than it does to paint one point at a time.
  *  
  *  the region of memory that serves as a scratch space of sorts 
- *  is the buffer that we are defining here, that we just named
+ *  is the buffer that we are defining here and that we just named
  *  `buffer0`.  
  */
+
 
 
 float tiles = 128;
 float tileSize = tft.width()/tiles;
 
-int mercury[256] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-                      0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0,
-                      0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0,
-                      0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,
-                      0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,
-                      0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0,
-                      0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0,
-                      0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,
-                      0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,
-                      0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,
-                      0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,
-                      0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,
-                      0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,
-                      0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,
-                      0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,
-                      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};   
+/*  the OLED display chosen has 128 pixels in both height and width
+ *   
+ *  we are dividing up the canvas into tiles.  this can be any number,
+ *  but initially we are choosing to have a one-to-one relationship.
+ *  
+ *  the canvas is thus divided up into 128 tiles both vertically and
+ *  horizontally, and tileSize is calculated to be the OLED width divided
+ *  by the number of tiles.  as it stands, tileSize is one point naught.
+ */
 
-int penColor = random(16536);
+
+
+int mercury[256] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                    0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0,
+                    0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0,
+                    0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,
+                    0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,
+                    0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0,
+                    0,0,0,0,0,1,1,0,0,1,1,0,0,0,0,0,
+                    0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,
+                    0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,
+                    0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,
+                    0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,
+                    0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,
+                    0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,
+                    0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,
+                    0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,
+                    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};   
+
+/*  this is an array.  it is also a sprite.  we have named it `mercury`
+ * 
+ *  as an array, it consists of 256 members where each member is of
+ *  type `int`. it is a one-dimensional array.
+ * 
+ *  as a sprite, it represents the alchemical symbol for `mercury`.  the
+ *  one-dimensional array has been divided into 16 rows of 16 columns
+ *  to provide insight into its two-dimensional nature. one can see the
+ *  image represented by this arrangement of values. 
+ */
+
+
+
+int penColor = random(65536);
+
+/*  we are defining a color to use.
+ *   it appears that we have chosen a pen over a brush.
+ *    chance will dictate the color
+ */
+
+
 
 void setup(void) {
   tft.init();
   tft.setRotation(2);
   tft.setSwapBytes(true);
   tft.fillScreen(TFT_BLACK);
-  buffer0.createSprite(128,128);
-  buffer0.setSwapBytes(true);
-  for (int x = 0; x < 128; x++) {
-    for (int y = 0; y < 128; y++){
-      if (random(2) == 0) {
-        buffer0.drawPixel(x,y,TFT_BLACK);
-      } else {
-        buffer0.drawPixel(x,y,penColor);
-      }
+
+/*
+ * necessary evils to bring about a functional canvas.
+ * 
+ * we start by painting it black.  no reason other than symbolic.
+ * we also point out that the fillscreen `function` within TFT_eSPI
+ * is used here as it is speed optimized.  `fillScreen` is one of only
+ * three functions within the library that we will invoke with the intent
+ * of exacting change upon the canvas.  the second will be `drawPixel` which will
+ * be the basis of our work. the third will be the `fillEllipse` function 
+ * which we will use to effectively paint a large point on the canvas for 
+ * illustrative purposes.  creating anything more substantial 
+ * than points will require us to graduate to the first level of magic, thus 
+ * `fillScreen` and `fillEllipse` are forbidden rituals, invoked by the initiate
+ * temporarily until rights to these methods can be secured.
+ */
+
+
+                                               //
+  buffer0.createSprite(128,128);              //  we previously named this buffer, now we give it breadth and length
+  buffer0.setSwapBytes(true);                //  set the buffer's byte order to match the display
+                                            //
+
+                                                //
+  for (int x = 0; x < 128; x++) {              // we are going to iterate over each pixel column...
+    for (int y = 0; y < 128; y++){            // and over each pixel row...
+      if (random(2) == 0) {                  // and for each, flip a coin, and if zero
+        buffer0.drawPixel(x,y,TFT_BLACK);   // we paint the pixel black in the buffer
+      } else {                             // otherwise
+        buffer0.drawPixel(x,y,penColor);  // we paint it the color previously chosen by fate
+      }                                  //
     }
-  }
-  buffer0.pushSprite(0,0);
+  }                                //
+  buffer0.pushSprite(0,0);        // and once we are finished, we push the buffer to the canvas          
+}                                // and we are done
+                                //
 
-}
-
+                                
 void loop() {
- 
-  tiles = random(33);
-  tileSize = tft.width()/tiles;
-  
-  for (int x = 0; x < 128; x++) {
-    for (int y = 0; y < 128; y++){
-      penColor = random(65536);
-      if (penColor < 32768) {
-        buffer0.drawPixel(x,y,TFT_BLACK);
-      } else {
-        buffer0.drawPixel(x,y,penColor);
-      }
+                                     //
+  tiles = random(1,33);             // now we permit chance to dicate the number of tiles
+  tileSize = tft.width()/tiles;    // and by that token, their size
+                                  //
+
+                                               //
+  for (int x = 0; x < 128; x++){              // if this looks familiar, then you are paying attention
+    for (int y = 0; y < 128; y++){           //
+      penColor = random(65536);             // this time, however, we are picking a different color each time
+      if (penColor < 32768) {              // but if the color is represented by a number in the lower half of the range
+        buffer0.drawPixel(x,y,TFT_BLACK); // we paint it black instead
+      } else {                           //
+        buffer0.drawPixel(x,y,penColor);// otherwise, we let chance decide
+      }                                //
     }
   }  
-  for (int x = 0; x < tiles; x++) {
-    for (int y = 0; y < tiles; y++){
-      int c = mercury[16*int(x*tileSize/8)+int(y*tileSize/8)];
-      float b = map(c,0,1,0,1); 
-      
-      buffer0.fillEllipse(x*tileSize,y*tileSize,tileSize*b,tileSize*b,TFT_BLACK);
-    }
-  }
-  buffer0.pushSprite(0,0);
-}
+
+
+                                                       //
+  for (int x = 0; x < tiles; x++){                    // again, you ask?  not so fast.  we just filled the canvas
+    for (int y = 0; y < tiles; y++){                 // randomly and pixel-wise... now it is tile-wise and `tiles` is random
+      int nx = map(x,0,tiles,0,16);                 // so we normalize the value of `x` and `y` to remain in a range of 
+      int ny = map(y,0,tiles,0,16);                // zero through 15 inclusive.                
+      int c = mercury[ 16 * nx + ny ];            // we are referencing the sprite. this might need explanation
+                                                 // 
+/*  what is `c`? well, to understand that, we must understand what was just done
+ *   
+ *  for starters, `c` is a variable of type `int`.  its value was set based upon   
+ *  the value of the array `mercury`, more specifically, one of its elements. as
+ *  the array represents a two-dimensional sprite with a height and width of 16,
+ *  we mapped the values of `x` and `y` to `nx` and `ny`, and we set the value of   
+ *  `c` to be the value of `mercury` at that given point.  in a nutshell, since the
+ *  sprite has a 16x16 resolution, depending upon the tile count, we are either
+ *  sub-sampling, critically-sampling, or super-sampling the bitmap within `mercury`
+ */
+                                                                                        //
+      buffer0.fillEllipse(x*tileSize,y*tileSize,tileSize*c,tileSize*c,TFT_BLACK);      // here we draw a black ellipse
+                                                                                      // in the buffer over the pixels that
+                                                                                     // were previously painted random colors,
+                                                                                    // but in cases where the sprite was `zero`
+                                                                                   // then `c` will be zero, and thus the radius
+                                                                                  // of our ellipse will be zero, thus not drawn...
+    }                                                                            //
+  }                                                                             //
+  buffer0.pushSprite(0,0);                                                     // and finally, we push the buffer to the canvas
+}                                                                             // and we finish defining the loop
+                                                                             //
