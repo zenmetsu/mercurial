@@ -1,5 +1,8 @@
 /*
  * Mercurial - a novel of sorts. a sourcebook of magic, perhaps.    
+ * 
+ * 202
+ *    Hg
  */
 
 #include "level_zero.h"
